@@ -3,7 +3,7 @@ name: Main Foodgarm workflow
 on:
   push:
     branches:
-      - main
+      - master
 
 jobs:
   tests:
