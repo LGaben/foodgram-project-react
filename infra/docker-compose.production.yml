@@ -14,9 +14,7 @@ services:
   
 
   backend:
-    build:
-      context: ../backend/foodgarm/
-      dockerfile: Dockerfile
+    image: lgaben/foodgarm_backend:latest
     env_file: .env
     volumes:
       - static:/backend_static
@@ -25,21 +23,17 @@ services:
       - db
 
   frontend:
-    build:
-      context: ../frontend
-      dockerfile: Dockerfile
+    image: lgaben/foodgarm_frontend:latest
     env_file: .env
     command: cp -r /app/build/. /frontend_static/ 
     volumes:
       - static:/frontend_static 
   
   nginx:
-    image: nginx:1.19.3
+    image: lgaben/foodgarm_gateway:latest
     env_file: .env
     ports:
-      - "80:80"
+      - "8000:80"
     volumes:
-      - ./nginx.conf:/etc/nginx/conf.d/default.conf
-      - ../docs/:/usr/share/nginx/html/api/docs/
       - static:/staticfiles/
       - media:/media
