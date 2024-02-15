@@ -2,7 +2,7 @@ import base64
 
 from django.db import IntegrityError
 from djoser.serializers import UserCreateSerializer, UserSerializer
-from django.shortcuts import get_object_or_404
+from rest_framework.generics import get_object_or_404
 from django.core.files.base import ContentFile
 from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
@@ -286,10 +286,14 @@ class RecipeNotSafeMetodSerialaizer(serializers.ModelSerializer):
             )
         unique_ingredients = []
         for ingredient in ingredients:
-            ingredients = get_object_or_404(
-                Ingredient,
-                id=ingredient.get('id')
-            )
+            try:
+                ingredients = Ingredient.objects.get(
+                    id=ingredient.get('id')
+                )
+            except ValueError:
+                raise serializers.ValidationError(
+                    'Такого индигриента не существует.'
+                )
             if ingredients in unique_ingredients:
                 raise serializers.ValidationError(
                     'Индигриенты должны быть уникальны.'
@@ -316,8 +320,7 @@ class RecipeNotSafeMetodSerialaizer(serializers.ModelSerializer):
         [ingredient_list.append(
             IngredientRecipe(
                 recipe=recipe,
-                ingredient=get_object_or_404(
-                    Ingredient,
+                ingredient=Ingredient.objects.get(
                     id=ingredient.get('id')
                 ),
                 amount=ingredient.get('amount')

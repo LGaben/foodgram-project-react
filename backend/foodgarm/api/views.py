@@ -1,18 +1,20 @@
 from django.db.models import Sum
 from django_filters.rest_framework import DjangoFilterBackend
-from django.shortcuts import HttpResponse, get_object_or_404
-from rest_framework import status, viewsets
+from django.shortcuts import HttpResponse
+from rest_framework.generics import get_object_or_404
+from rest_framework import status, viewsets, serializers
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.generics import ListAPIView
 
 from recipes.models import (
     Favorite, Ingredient, Recipe,
     ShoppingCart, Tag, IngredientRecipe
 )
 from users.models import User, Follow
-from .filters import RecipeFilter, IngredientSearchFilter
+from .filters import RecipeFilter, IngredientFilter
 from .permissions import IsAdminAuthorOrReadOnly
 from .serializers import (
     FavoriteSerializer,
@@ -24,7 +26,6 @@ from .serializers import (
     UserFollowInfoSerializer,
     UserFollowSerializer
 )
-from .mixins import ListViewSet
 
 
 class TagViewSet(viewsets.ReadOnlyModelViewSet):
@@ -42,7 +43,8 @@ class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
     permission_classes = (AllowAny,)
-    filter_backends = (DjangoFilterBackend, IngredientSearchFilter)
+    filter_backends = (DjangoFilterBackend, )
+    filterset_class = IngredientFilter
     pagination_class = None
 
 
@@ -60,11 +62,17 @@ class RecipeViewSet(viewsets.ModelViewSet):
         return RecipeNotSafeMetodSerialaizer
 
     def recipe_post_delite(self, request, pk, model, serialiser_class):
+        try:
+            recipe = Recipe.objects.get(id=pk)
+        except ValueError:
+            raise serializers.ValidationError(
+                'Такого индигриента не существует.'
+            )
         if request.method == 'POST':
             serializer = serialiser_class(
                 data={
                     'user': request.user.id,
-                    'recipe': get_object_or_404(Recipe, id=pk).id,
+                    'recipe': recipe.id,
                 },
                 context={'request': request}
             )
@@ -74,12 +82,12 @@ class RecipeViewSet(viewsets.ModelViewSet):
         if request.method == 'DELETE':
             if not model.objects.filter(
                 user=request.user,
-                recipe=get_object_or_404(Recipe, id=pk)
+                recipe=recipe
             ).exists():
                 return Response(status=status.HTTP_400_BAD_REQUEST)
             model.objects.filter(
                 user=request.user,
-                recipe=get_object_or_404(Recipe, id=pk)
+                recipe=recipe
             ).delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -164,7 +172,7 @@ class UserFollowView(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class UserFollowGetView(ListViewSet):
+class UserFollowGetView(ListAPIView):
     """Getting user subscriptions."""
 
     serializer_class = UserFollowInfoSerializer

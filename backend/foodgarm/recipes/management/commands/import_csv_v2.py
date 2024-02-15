@@ -1,7 +1,8 @@
 import csv
 
-from django.conf import settings
 from pathlib import Path
+
+from django.conf import settings
 from django.core.management.base import BaseCommand
 
 from recipes.models import Ingredient
@@ -15,11 +16,8 @@ def import_data_ingredient():
         newline=''
     ) as csvfile:
         reader = csv.DictReader(csvfile)
-        id = 0
         for row in reader:
-            id += 1
             Ingredient.objects.create(
-                id=id,
                 name=row['name'],
                 measurement_unit=row['measurement_unit']
             )

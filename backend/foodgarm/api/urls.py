@@ -20,7 +20,7 @@ v1_router.register(r'recipes', RecipeViewSet, basename='recipes')
 urlpatterns = [
     path(
         'users/subscriptions/',
-        UserFollowGetView.as_view({'get': 'list'})
+        UserFollowGetView.as_view()
     ),
     path('users/<int:user_id>/subscribe/', UserFollowView.as_view()),
     path('', include(v1_router.urls)),

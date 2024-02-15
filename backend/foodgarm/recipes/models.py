@@ -1,4 +1,4 @@
-from django.core.validators import MinValueValidator
+from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 from colorfield.fields import ColorField
 
@@ -17,7 +17,12 @@ class Ingredient(models.Model):
 
     class Meta:
         ordering = ('name',)
-
+        constraints = [
+            models.UniqueConstraint(
+                fields=['name', 'measurement_unit'],
+                name='unique_name_measurement_unit'
+            )
+        ]
     def __str__(self):
         return self.name[:50]
 
@@ -71,7 +76,8 @@ class Recipe(models.Model):
     cooking_time = models.PositiveSmallIntegerField(
         verbose_name='Время приготовления (в минутах)',
         validators=[
-            MinValueValidator(1, 'Не меньше одной минуты')
+            MinValueValidator(1, 'Не меньше одной минуты'),
+            MaxValueValidator(3000, 'Не больше 3000 минут')
         ]
     )
     author = models.ForeignKey(
