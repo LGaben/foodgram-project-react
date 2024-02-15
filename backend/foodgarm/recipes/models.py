@@ -33,7 +33,7 @@ class Tag(models.Model):
         max_length=7,
         unique=True,
         verbose_name='Цвет в HEX'
-        )
+    )
     slug = models.SlugField(
         max_length=200,
         unique=True,

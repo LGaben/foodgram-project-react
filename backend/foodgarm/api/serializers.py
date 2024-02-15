@@ -26,7 +26,6 @@ class Base64ImageField(serializers.ImageField):
             format, imgstr = data.split(';base64,')
             ext = format.split('/')[-1]
             data = ContentFile(base64.b64decode(imgstr), name='temp.' + ext)
-
         return super().to_internal_value(data)
 
 
@@ -131,8 +130,7 @@ class UserFollowSerializer(serializers.ModelSerializer):
         validators = [
             UniqueTogetherValidator(
                 queryset=Follow.objects.all(),
-                fields=('user', 'author'),
-                message='Вы уже подписаны на этого пользователя'
+                fields=('user', 'author')
             )
         ]
 
@@ -156,7 +154,7 @@ class TagSerialiser(serializers.ModelSerializer):
 
     class Meta:
         model = Tag
-        fields = '__all__'
+        fields = ('id', 'name', 'color', 'slug',)
 
 
 class IngredientSerializer(serializers.ModelSerializer):
@@ -164,7 +162,7 @@ class IngredientSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Ingredient
-        fields = '__all__'
+        fields = ('id', 'name', 'measurement_unit',)
 
 
 class IngredientRecipeSerializer(serializers.ModelSerializer):
@@ -195,7 +193,8 @@ class IngredientRecipeCreateSerializer(serializers.ModelSerializer):
     def validate_amount(self, value):
         if value <= 0:
             raise serializers.ValidationError(
-                'Колличество индигриентов не может быть меньше 1.')
+                'Колличество индигриентов не может быть меньше 1.'
+            )
         return value
 
 
@@ -256,8 +255,14 @@ class RecipeNotSafeMetodSerialaizer(serializers.ModelSerializer):
 
     class Meta:
         model = Recipe
-        fields = ('ingredients', 'tags', 'image',
-                  'name', 'text', 'cooking_time')
+        fields = (
+            'ingredients',
+            'tags',
+            'image',
+            'name',
+            'text',
+            'cooking_time'
+        )
         validators = [
             UniqueTogetherValidator(
                 queryset=Recipe.objects.all(),
@@ -281,8 +286,10 @@ class RecipeNotSafeMetodSerialaizer(serializers.ModelSerializer):
             )
         unique_ingredients = []
         for ingredient in ingredients:
-            ingredients = get_object_or_404(Ingredient,
-                                            id=ingredient.get('id'))
+            ingredients = get_object_or_404(
+                Ingredient,
+                id=ingredient.get('id')
+            )
             if ingredients in unique_ingredients:
                 raise serializers.ValidationError(
                     'Индигриенты должны быть уникальны.'
@@ -307,15 +314,15 @@ class RecipeNotSafeMetodSerialaizer(serializers.ModelSerializer):
     def add_ingredients(self, ingredients, recipe):
         ingredient_list = []
         [ingredient_list.append(
-                IngredientRecipe(
-                    recipe=recipe,
-                    ingredient=get_object_or_404(
-                        Ingredient,
-                        id=ingredient.get('id')
-                    ),
-                    amount=ingredient.get('amount')
-                )
-            ) for ingredient in ingredients]
+            IngredientRecipe(
+                recipe=recipe,
+                ingredient=get_object_or_404(
+                    Ingredient,
+                    id=ingredient.get('id')
+                ),
+                amount=ingredient.get('amount')
+            )
+        ) for ingredient in ingredients]
         IngredientRecipe.objects.bulk_create(ingredient_list)
 
     def create(self, validated_data):

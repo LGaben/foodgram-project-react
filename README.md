@@ -39,10 +39,11 @@ TELEGRAM_TOKEN #токен бота в Telegram
 
 ```sudo docker-compose exec web python manage.py createsuperuser```
 
-и загрузить в БД информацию об ингридиентах
-
-```sudo docker-compose exec web python manage.py import_csv_v2```
 
 ### Автор проекта
 
 **Филин Иван.**
+
+https://foodgarm.ddns.net/
+admin - qwe
+pass - 123
