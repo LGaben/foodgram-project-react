@@ -1,6 +1,7 @@
 import base64
 
 from django.db import IntegrityError
+from django.core.exceptions import ObjectDoesNotExist
 from djoser.serializers import UserCreateSerializer, UserSerializer
 from django.core.files.base import ContentFile
 from rest_framework import serializers
@@ -279,6 +280,11 @@ class RecipeNotSafeMetodSerialaizer(serializers.ModelSerializer):
 
     def validate(self, attrs):
         ingredients = attrs.get('ingredientrecipes')
+        tags = attrs.get('tags')
+        if not tags:
+            raise serializers.ValidationError(
+                'Нужно выбрать хотя бы 1 тег!'
+            )
         if not ingredients:
             raise serializers.ValidationError(
                 'Нужно выбрать хотя бы 1 ингредиент!'
@@ -289,7 +295,7 @@ class RecipeNotSafeMetodSerialaizer(serializers.ModelSerializer):
                 ingredients = Ingredient.objects.get(
                     id=ingredient.get('id')
                 )
-            except ValueError:
+            except ObjectDoesNotExist:
                 raise serializers.ValidationError(
                     'Такого индигриента не существует.'
                 )
@@ -315,16 +321,14 @@ class RecipeNotSafeMetodSerialaizer(serializers.ModelSerializer):
         return tags
 
     def add_ingredients(self, ingredients, recipe):
-        ingredient_list = []
-        [ingredient_list.append(
+        ingredient_list = [
             IngredientRecipe(
                 recipe=recipe,
-                ingredient=Ingredient.objects.get(
-                    id=ingredient.get('id')
-                ),
+                ingredient_id=ingredient.get('id'),
                 amount=ingredient.get('amount')
             )
-        ) for ingredient in ingredients]
+            for ingredient in ingredients
+        ]
         IngredientRecipe.objects.bulk_create(ingredient_list)
 
     def create(self, validated_data):

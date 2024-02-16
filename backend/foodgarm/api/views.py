@@ -1,4 +1,6 @@
 from django.db.models import Sum
+from django.http import Http404
+from django.core.exceptions import ObjectDoesNotExist
 from django_filters.rest_framework import DjangoFilterBackend
 from django.shortcuts import HttpResponse
 from rest_framework.generics import get_object_or_404
@@ -64,10 +66,12 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def recipe_post_delite(self, request, pk, model, serialiser_class):
         try:
             recipe = Recipe.objects.get(id=pk)
-        except ValueError:
-            raise serializers.ValidationError(
-                'Такого индигриента не существует.'
-            )
+        except ObjectDoesNotExist:
+            if request.method == 'POST':
+                raise serializers.ValidationError(
+                    'Такого рецепта не существует.'
+                )
+            raise Http404
         if request.method == 'POST':
             serializer = serialiser_class(
                 data={
