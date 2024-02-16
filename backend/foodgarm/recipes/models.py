@@ -23,6 +23,7 @@ class Ingredient(models.Model):
                 name='unique_name_measurement_unit'
             )
         ]
+
     def __str__(self):
         return self.name[:50]
 
