@@ -114,6 +114,14 @@ class IngredientRecipe(models.Model):
         ]
     )
 
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['recipe', 'ingredient'],
+                name='unique_ingredient_recipe',
+            )
+        ]
+
 
 class ShoppingCart(models.Model):
     user = models.ForeignKey(
@@ -138,7 +146,7 @@ class ShoppingCart(models.Model):
         ]
 
     def __str__(self):
-        return f'{self.recipe[:50]} у пользователя {self.user[:50]}'
+        return f'{self.recipe} у пользователя {self.user}'
 
 
 class Favorite(models.Model):
@@ -164,4 +172,4 @@ class Favorite(models.Model):
         ]
 
     def __str__(self):
-        return f'{self.recipe[:50]} у пользователя {self.user[:50]}'
+        return f'{self.recipe} у пользователя {self.user}'

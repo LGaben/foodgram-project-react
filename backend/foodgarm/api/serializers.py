@@ -292,18 +292,18 @@ class RecipeNotSafeMetodSerialaizer(serializers.ModelSerializer):
         unique_ingredients = []
         for ingredient in ingredients:
             try:
-                ingredients = Ingredient.objects.get(
+                item = Ingredient.objects.get(
                     id=ingredient.get('id')
                 )
             except ObjectDoesNotExist:
                 raise serializers.ValidationError(
                     'Такого индигриента не существует.'
                 )
-            if ingredients in unique_ingredients:
+            if item in unique_ingredients:
                 raise serializers.ValidationError(
                     'Индигриенты должны быть уникальны.'
                 )
-            unique_ingredients.append(ingredients)
+            unique_ingredients.append(item)
         return attrs
 
     def validate_tags(self, tags):
