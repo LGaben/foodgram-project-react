@@ -43,7 +43,3 @@ TELEGRAM_TOKEN #токен бота в Telegram
 ### Автор проекта
 
 **Филин Иван.**
-
-https://foodgarm.ddns.net/
-admin - qwe
-pass - 123
